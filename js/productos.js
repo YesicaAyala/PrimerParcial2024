@@ -1,30 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
     const productList = document.getElementById('product-list');
+    const filterButtons = document.querySelectorAll('.filter-btn');
 
-    // Obtener productos desde la API
-    fetch('https://fakestoreapi.com/products')
-        .then(res => res.json())
-        .then(products => {
-            // Iterar sobre los productos y agregarlos al DOM
-            products.forEach(product => {
-                // Crear un contenedor para cada producto
-                const productCard = document.createElement('div');
-                productCard.classList.add('product-card');
+    // Función para cargar y mostrar productos
+    function loadProducts(category = '') {
+        let url = 'https://fakestoreapi.com/products';
+        
+        // Si hay una categoría seleccionada, modificar la URL para filtrar
+        if (category) {
+            url += `/category/${category}`;
+        }
 
-                // Crear el contenido del producto
-                productCard.innerHTML = `
-                    <img src="${product.image}" alt="${product.title}" class="product-image">
-                    <h3>${product.title}</h3>
-                    <p>${product.description}</p>
-                    <p><strong>Precio:</strong> $${product.price}</p>
-                `;
+        fetch(url)
+            .then(res => res.json())
+            .then(products => {
+                // Limpiar el contenedor de productos
+                productList.innerHTML = '';
+                
+                // Iterar sobre los productos y agregarlos al DOM
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.classList.add('product-card');
 
-                // Añadir el producto a la lista
-                productList.appendChild(productCard);
+                    productCard.innerHTML = `
+                        <img src="${product.image}" alt="${product.title}" class="product-image">
+                        <h3>${product.title}</h3>
+                        <p>${product.description}</p>
+                        <p><strong>Precio:</strong> $${product.price}</p>
+                    `;
+
+                    productList.appendChild(productCard);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                productList.innerHTML = '<p>Hubo un error al cargar los productos.</p>';
             });
-        })
-        .catch(error => {
-            console.error('Error fetching products:', error);
-            productList.innerHTML = '<p>Hubo un error al cargar los productos.</p>';
+    }
+
+    // Cargar todos los productos al inicio
+    loadProducts();
+
+    // Añadir evento a los botones para filtrar por categoría
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.getAttribute('data-category');
+            loadProducts(category);
         });
+    });
 });
+
